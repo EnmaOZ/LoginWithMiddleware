@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\RoleModel;
 
 class Home extends BaseController
 {
@@ -37,18 +38,24 @@ class Home extends BaseController
     }
 
     public function inicio()
-{
-    if (!session()->get('isLoggedIn')) {
-        return redirect()->to('/')->with('error', 'Debes iniciar sesión');
-    }
+    {
+        if (!session()->get('isLoggedIn')) {
+            return redirect()->to('/')->with('error', 'Debes iniciar sesión');
+        }
 
-    if (!userHasRole('admin')) {
+        // Obtener el rol del usuario
+        $userId = session()->get('user_id');
+        $roleModel = new RoleModel();
+        $role = $roleModel->getRoleByUserId($userId);
+
+        if ($role === 'admin') {
+            return view('inicio_admin');  // Vista para el admin
+        } else if ($role === 'user') {
+            return view('inicio_user');  // Vista para el usuario regular
+        }
+
         return redirect()->to('/')->with('error', 'No tienes permisos para acceder a esta página');
     }
-
-    return view('inicio');
-}
-
 
     public function logout()
     {
